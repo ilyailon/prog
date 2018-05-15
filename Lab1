@@ -1,0 +1,260 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+class matrix
+{
+private:
+    vector < vector<int> > data;
+    int W, H;
+
+public:
+    matrix( int H_, int W_)
+    {
+        H = H_;
+        W = W_;
+        data.resize(H);
+        for (int i = 0; i < H; i++)
+            data[i].assign(W, 0);
+    }
+
+    ~matrix()
+    {
+        for (int i = 0; i < H; i++)
+            data[i].clear();
+        data.clear();
+    }
+
+    //-------------------------------------------------------
+
+    friend ifstream& operator>> (ifstream& input, matrix &m)
+    {
+        for (int i = 0; i < m.H; i++)
+            for (int j = 0; j < m.W; j++)
+                input >> m.data[i][j];
+        return input;
+    }
+
+    friend ofstream& operator<< (ofstream& output, const matrix &m)
+    {
+        for (int i = 0; i < m.H; i++)
+        {
+            for (int j = 0; j < m.W; j++)
+                output << m.data[i][j] << ' ';
+            output << endl;
+        }
+        return output;
+    }
+
+    //-------------------------------------------------------
+
+    matrix& operator= (const matrix &m)
+    {
+        W = m.W;
+        H = m.H;
+        data.resize(H);
+        for (int i = 0; i < H; i++)
+            data[i].resize(W);
+        for (int i = 0; i < H; i++)
+            for (int j = 0; j <  W; j++)
+                data[i][j] = m.data[i][j];
+        return *this;
+    }
+
+    //-------------------------------------------------------
+
+    matrix operator+ (const int add) const
+    {
+        matrix result(H, W);
+        for (int i = 0; i < H; i++)
+            for (int j = 0; j <  W; j++)
+                result.data[i][j] = data[i][j] + add;
+        return result;
+    }
+
+    const matrix operator+ ( const matrix &m1 ) const
+    {
+        if (H == m1.H && W == m1.W)
+        {
+            matrix result(H, W);
+            for (int i = 0; i < H; i++)
+                for (int j = 0; j < W; j++)
+                    result.data[i][j] = data[i][j] + m1.data[i][j];
+            return result;
+        }
+        else return *this;
+    }
+
+    const matrix operator- (const int add) const
+    {
+        matrix result(H, W);
+        for (int i = 0; i < H; i++)
+            for (int j = 0; j <  W; j++)
+                result.data[i][j] = data[i][j] - add;
+        return result;
+    }
+
+    const matrix operator- ( const matrix &m1 ) const
+    {
+        if (H == m1.H && W == m1.W)
+        {
+            matrix result(H, W);
+            for (int i = 0; i < H; i++)
+                for (int j = 0; j < W; j++)
+                    result.data[i][j] = data[i][j] - m1.data[i][j];
+            return result;
+        }
+        else return *this;
+    }
+
+    const matrix operator* (const int add) const
+    {
+        matrix result(H, W);
+        for (int i = 0; i < H; i++)
+            for (int j = 0; j <  W; j++)
+                result.data[i][j] = data[i][j] * add;
+        return result;
+    }
+
+    const matrix operator* ( const matrix &m1 ) const
+    {
+        if (H == m1.H && W == m1.W)
+        {
+            matrix result(H, W);
+            for (int i = 0; i < H; i++)
+                for (int j = 0; j < W; j++)
+                    result.data[i][j] = data[i][j] * m1.data[i][j];
+            return result;
+        }
+        else return *this;
+    }
+
+    const matrix operator+= (const int add)
+    {
+        *this = *this + add;
+        return *this;
+    }
+
+    matrix& operator+= ( const matrix &m1 )
+    {
+        if (H == m1.H && W == m1.W)
+        {
+            *this = *this + m1;
+        }
+    }
+
+    const matrix operator-= (const int add)
+    {
+        *this = *this - add;
+        return *this;
+    }
+
+    matrix& operator-= ( const matrix &m1 )
+    {
+        if (H == m1.H && W == m1.W)
+        {
+            *this = *this - m1;
+        }
+    }
+
+    const matrix operator*= (const int add)
+    {
+        *this = *this * add;
+        return *this;
+    }
+
+    matrix& operator*= ( const matrix &m1 )
+    {
+        if (H == m1.H && W == m1.W)
+        {
+            *this = *this * m1;
+        }
+    }
+    //-------------------------------------------------------
+
+    const int operator() (const int i, const int j) const
+    {
+        return data.at(i).at(j);
+    }
+
+    int& operator() (const int i, const int j)
+    {
+        return data.at(i).at(j);
+    }
+
+    //-------------------------------------------------------
+
+    void transpose()
+    {
+        matrix result(W, H);
+        for (int i = 0; i < H; i++)
+            for (int j = 0; j < W; j++)
+                result.data[j][i] = data[i][j];
+        *this = result;
+    }
+
+    matrix dot(matrix &m)
+    {
+        if (W == m.H)
+        {
+            matrix result(H, m.W);
+            for (int i = 0; i < H; i++)
+                for (int j = 0; j < m.W; j++)
+                    for (int k = 0; k < W; k++)
+                        result(i, j) += data[i][k] * m.data[k][j];
+            return result;
+        }
+        else return *this;
+    }
+};
+
+int main()
+{
+    ifstream fin("input.txt");
+    ofstream fout ("output.txt");
+
+    int H, W;
+    fin >> H >> W;
+    matrix a(H, W), b(H, W), sum(H, W), diff(H, W), mult1(H, W), mult2(H, W);
+    fin >> a >> b;
+
+    sum = a + b;
+    fout << "==== A + B ====\n";
+    fout << sum;
+
+    diff = a - b;
+    fout << "==== A - B ====\n";
+    fout << diff;
+
+    mult1 = a * b;
+    fout << "==== A * B ====\n";
+    fout << mult1;
+
+    a += b;
+    fout << "==== A += B ====\n";
+    fout << a;
+
+    a -= b;
+    fout << "==== A -= B ====\n";
+    fout << a;
+
+    a *= b;
+    fout << "==== A *= B ====\n";
+    fout << a;
+
+    fout << "==== A(1, 1) ====\n";
+    fout << a(1, 1) << endl;
+
+    fout << "==== transposed A ====\n";
+    a.transpose();
+    fout << a;
+
+    a.transpose();
+    mult2 = a.dot(b);
+    fout << "==== A.dot(B) ====\n";
+    fout << mult2;
+
+    return 0;
+}
